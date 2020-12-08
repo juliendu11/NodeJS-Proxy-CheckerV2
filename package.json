@@ -1,9 +1,12 @@
 {
   "name": "nodejs-proxy-checkerv2",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "It's simple Proxy Checker, get proxy status, anonymous level, type, time, country",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "npx jest",
     "build": "tsc"
