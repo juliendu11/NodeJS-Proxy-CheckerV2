@@ -16,7 +16,7 @@ npm i nodejs-proxy-checkerv2
 # How to use ?
 
 ```javascript
-const proxy_checker = require("nodejs-proxy-checkerv2").default;
+const ProxyChecker = require("nodejs-proxy-checkerv2").default;
 const instance =new ProxyChecker()
     .addProxiesFromFile("./proxies.txt")
     .addDefaultProxyJudge() // -> optional if you put yours otherwise you have to put it
