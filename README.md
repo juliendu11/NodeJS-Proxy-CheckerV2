@@ -29,7 +29,7 @@ Proxy format: <strong>address:port</strong> or <strong>address:port:username:pas
 
 ### Load proxies with file
 
-One proxy per line and in this format: address: port
+
 
 ```javascript
 const instance =new ProxyChecker()
@@ -42,7 +42,7 @@ const result = await instance.check(null);
 
 ### Load proxys with string array
 
-One proxy per line and in this format: address: port
+
 
 ```javascript
 const proxies = [
