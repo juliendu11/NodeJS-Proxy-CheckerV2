@@ -1,0 +1,31 @@
+REMOTE_ADDR=50.90.176.75
+CONTEXT_DOCUMENT_ROOT=/home/knowops1/cgi-bin/
+CONTEXT_PREFIX=/cgi-bin/
+DOCUMENT_ROOT=/home/knowops1/public_html
+GATEWAY_INTERFACE=CGI/1.1
+HTTP_ACCEPT=text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+HTTP_ACCEPT_ENCODING=gzip, deflate
+HTTP_ACCEPT_LANGUAGE=fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7
+HTTP_CONNECTION=keep-alive
+HTTP_HOST=www.knowops.com
+HTTP_UPGRADE_INSECURE_REQUESTS=1
+HTTP_USER_AGENT=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+QUERY_STRING=
+REMOTE_ADDR=50.90.176.75
+REMOTE_PORT=57050
+REQUEST_METHOD=GET
+REQUEST_SCHEME=http
+REQUEST_URI=/cgi-bin/textenv.pl
+SCRIPT_FILENAME=/home/knowops1/cgi-bin/textenv.pl
+SCRIPT_NAME=/cgi-bin/textenv.pl
+SCRIPT_URI=http://www.knowops.com/cgi-bin/textenv.pl
+SCRIPT_URL=/cgi-bin/textenv.pl
+SERVER_ADDR=64.62.216.151
+SERVER_ADMIN=support@knowops.com
+SERVER_NAME=www.knowops.com
+SERVER_PORT=80
+SERVER_PROTOCOL=HTTP/1.1
+SERVER_SIGNATURE=<address>Apache/2.4.18 (Ubuntu) Server at www.knowops.com Port 80</address>
+
+SERVER_SOFTWARE=Apache/2.4.18 (Ubuntu)
