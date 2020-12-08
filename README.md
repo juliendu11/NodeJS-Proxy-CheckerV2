@@ -25,6 +25,8 @@ const instance =new ProxyChecker()
 const result = await instance.check(null);
 ```
 
+Proxy format: <strong>address:port</strong> or <strong>address:port:username:password</strong>
+
 ### Load proxies with file
 
 One proxy per line and in this format: address: port
@@ -58,8 +60,6 @@ const result = await instance.check(null);
 ```
 
 ### Load only one proxy
-
-Format: address: port
 
 ```javascript
 const instance =new ProxyChecker()

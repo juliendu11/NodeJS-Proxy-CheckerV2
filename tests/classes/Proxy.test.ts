@@ -213,6 +213,166 @@ describe('Unit test for classes/Proxy', () => {
         expect(instance.country).toBe(dataInformationProvider.country_name)
         done()
     })
+
+    test('Should set timeout option 5000 in axios get', async done => {
+        const dataInformationProvider = {
+            country_name:'FRANCE'
+        }
+
+        const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+        mockedAxios.get = jest.fn()
+        .mockResolvedValueOnce({
+            status: 200,
+            data: replaceAll(fakeProxyJudgeData, '50.90.176.75', '')
+        })
+        .mockResolvedValueOnce({
+            status: 200,
+            data: dataInformationProvider
+        })
+
+        const instance = new Proxy(proxy, mockedAxios);
+        await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp,5000);
+
+        expect(mockedAxios.get).toBeCalledWith(proxyInformationProvider, {
+            timeout: 5000,
+            proxy: {
+                host: proxy.split(':')[0],
+                port:  parseInt(proxy.split(':')[1]),
+            },
+        })
+        done()
+    })
+
+    test('Should set timeout option 8000 in axios get', async done => {
+        const dataInformationProvider = {
+            country_name:'FRANCE'
+        }
+
+        const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+        mockedAxios.get = jest.fn()
+        .mockResolvedValueOnce({
+            status: 200,
+            data: replaceAll(fakeProxyJudgeData, '50.90.176.75', '')
+        })
+        .mockResolvedValueOnce({
+            status: 200,
+            data: dataInformationProvider
+        })
+
+        const instance = new Proxy(proxy, mockedAxios);
+        await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp,8000);
+
+        expect(mockedAxios.get).toBeCalledWith(proxyInformationProvider, {
+            timeout: 8000,
+            proxy: {
+                host: proxy.split(':')[0],
+                port:  parseInt(proxy.split(':')[1]),
+            },
+        })
+        done()
+    })
+
+    test('Should set proxy.auth when username and password are available in axios get', async done => {
+        const dataInformationProvider = {
+            country_name:'FRANCE'
+        }
+
+        const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+        mockedAxios.get = jest.fn()
+        .mockResolvedValueOnce({
+            status: 200,
+            data: replaceAll(fakeProxyJudgeData, '50.90.176.75', '')
+        })
+        .mockResolvedValueOnce({
+            status: 200,
+            data: dataInformationProvider
+        })
+
+        const newProxy = "58.145.587.20:50:test11:123"
+
+        const instance = new Proxy(newProxy, mockedAxios);
+        await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp,8000);
+
+        expect(mockedAxios.get).toBeCalledWith(proxyInformationProvider, {
+            timeout: 8000,
+            proxy: {
+                host: newProxy.split(':')[0],
+                port:  parseInt(newProxy.split(':')[1]),
+                auth: {
+                    username: newProxy.split(':')[2],
+                    password: newProxy.split(':')[3]
+                }
+            },
+        })
+        done()
+    })
+
+    test('Should not set proxy.auth when username is available but not password in axios get', async done => {
+        const dataInformationProvider = {
+            country_name:'FRANCE'
+        }
+
+        const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+        mockedAxios.get = jest.fn()
+        .mockResolvedValueOnce({
+            status: 200,
+            data: replaceAll(fakeProxyJudgeData, '50.90.176.75', '')
+        })
+        .mockResolvedValueOnce({
+            status: 200,
+            data: dataInformationProvider
+        })
+
+        const newProxy = "58.145.587.20:50:test11"
+
+        const instance = new Proxy(newProxy, mockedAxios);
+        await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp,8000);
+
+        expect(mockedAxios.get).toBeCalledWith(proxyInformationProvider, {
+            timeout: 8000,
+            proxy: {
+                host: newProxy.split(':')[0],
+                port:  parseInt(newProxy.split(':')[1]),
+            },
+        })
+        done()
+    })
+
+    test('Should not set proxy.auth when username and password not available in axios get', async done => {
+        const dataInformationProvider = {
+            country_name:'FRANCE'
+        }
+
+        const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+        mockedAxios.get = jest.fn()
+        .mockResolvedValueOnce({
+            status: 200,
+            data: replaceAll(fakeProxyJudgeData, '50.90.176.75', '')
+        })
+        .mockResolvedValueOnce({
+            status: 200,
+            data: dataInformationProvider
+        })
+
+        const newProxy = "58.145.587.20:50"
+
+        const instance = new Proxy(newProxy, mockedAxios);
+        await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp,8000);
+
+        expect(mockedAxios.get).toBeCalledWith(proxyInformationProvider, {
+            timeout: 8000,
+            proxy: {
+                host: newProxy.split(':')[0],
+                port:  parseInt(newProxy.split(':')[1]),
+            },
+        })
+        done()
+    })
 })
 
 function replaceAll(str:any, find:any, replace:any) {

@@ -1,7 +1,7 @@
 enum ProxyStatus {
     Dead= "Dead",
     Alive= "Alive",
-    Unknwow= "Unknwow"
+    Unknown= "Unknown"
 }
 
 export default ProxyStatus;

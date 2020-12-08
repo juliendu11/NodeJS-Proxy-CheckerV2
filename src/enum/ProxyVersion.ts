@@ -2,7 +2,7 @@ enum ProxyVersion {
     SOCKS5= "SOCKS5",
     SOCKS4= "SOCKS4",
     HTTP= "HTTP",
-    Unknwow= "Unknwow"
+    Unknown= "Unknown"
 }
 
 export default ProxyVersion;

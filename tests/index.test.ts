@@ -199,4 +199,11 @@ describe('Unit test for index.ts', () => {
 
         done();
     })
+
+    test('Should set timeout 3000 when call setRequestTimeout with 3000', () => {
+        const instance = new ProxyChecker();
+        instance.setRequestTimeout(3000);
+
+        expect(instance.timeout).toBe(3000);
+    })
 })

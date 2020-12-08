@@ -2,7 +2,7 @@ enum ProxyAnonymousLevel {
     Hight= "Hight",
     Medium= "Medium",
     Low= "Low",
-    Unknwow= "Unknwow"
+    Unknown= "Unknown"
 }
 
 export default ProxyAnonymousLevel;

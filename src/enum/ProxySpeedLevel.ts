@@ -2,7 +2,7 @@ enum ProxySpeedLevel {
     Slow= "Slow",
     Medium= "Medium",
     Fast= "Fast",
-    Unknwow= "Unknwow"
+    Unknown= "Unknown"
 }
 
 export default ProxySpeedLevel;

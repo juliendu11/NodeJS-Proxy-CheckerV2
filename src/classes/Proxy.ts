@@ -4,7 +4,9 @@ import ProxyStatus from "../enum/ProxyStatus";
 import ProxyVersion from "../enum/ProxyVersion";
 import ProxyJudgeResponse from "../models/ProxyJudgeResponse";
 import { clock } from '../helpers/performance';
-import { AxiosStatic } from "axios";
+import { AxiosRequestConfig, AxiosStatic } from "axios";
+import {proxySplit } from '../helpers/splitter'
+import { throws } from "assert";
 
 class Proxy {
 
@@ -12,29 +14,40 @@ class Proxy {
     address: string
     port: string
 
+    username:string =""
+    password:string =""
+
     proxyJudgeSelected: string = ""
     proxyInformationProviderSelected: string = ""
 
-    anonymousLevel: ProxyAnonymousLevel = ProxyAnonymousLevel.Unknwow;
-    speedLevel: ProxySpeedLevel = ProxySpeedLevel.Unknwow;
-    status: ProxyStatus = ProxyStatus.Unknwow;
-    version: ProxyVersion = ProxyVersion.Unknwow;
+    anonymousLevel: ProxyAnonymousLevel = ProxyAnonymousLevel.Unknown;
+    speedLevel: ProxySpeedLevel = ProxySpeedLevel.Unknown;
+    status: ProxyStatus = ProxyStatus.Unknown;
+    version: ProxyVersion = ProxyVersion.Unknown;
     timeTaken: number = 0;
     country: string = ""
 
     axios: AxiosStatic | null = null;
+    timeout:number = 0;
 
     constructor(proxy: string, axios: AxiosStatic) {
         this.proxy = proxy;
         this.axios = axios;
 
-        this.address = proxy.split(':')[0];
-        this.port = proxy.split(':')[1];
+        const val = proxySplit(proxy);
+        this.address = val[0];
+        this.port = val[1];
+
+        if(val.length > 2){
+            this.username = val[2];
+            this.password = val[3];
+        }
     }
 
-    async checkProxy(proxyJudgeSelected: string, proxyInformationProviderSelected: string, myIP: string) {
+    async checkProxy(proxyJudgeSelected: string, proxyInformationProviderSelected: string, myIP: string, timeout:number =0) {
         this.proxyJudgeSelected = proxyJudgeSelected;
         this.proxyInformationProviderSelected = proxyInformationProviderSelected;
+        this.timeout = timeout;
 
         let data;
 
@@ -72,7 +85,7 @@ class Proxy {
             } else if (obj["REMOTE_ADDR"].includes(myIP)) {
                 this.anonymousLevel = ProxyAnonymousLevel.Low;
             } else {
-                this.anonymousLevel = ProxyAnonymousLevel.Unknwow;
+                this.anonymousLevel = ProxyAnonymousLevel.Unknown;
             }
         } else {
             this.anonymousLevel = ProxyAnonymousLevel.Hight;
@@ -121,12 +134,30 @@ class Proxy {
 
     private async generateAxiosHandler(url: string) {
         if (!this.axios) throw new Error("No axios instance added")
-        return await this.axios.get(url, {
+
+        let option: AxiosRequestConfig = {
+            timeout: this.timeout,
             proxy: {
                 host: this.address,
                 port: parseInt(this.port),
             },
-        })
+        }
+
+        if (this.username && this.password) {
+            option = {
+                timeout: this.timeout,
+                proxy: {
+                    host: this.address,
+                    port: parseInt(this.port),
+                    auth: {
+                        username: this.username,
+                        password: this.password
+                    }
+                },
+            }
+        }
+        
+        return await this.axios.get(url, option)
     }
 }
 

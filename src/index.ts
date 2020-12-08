@@ -20,6 +20,8 @@ class ProxyChecker {
 
     myIP:string= "";
 
+    timeout =0;
+
     public addProxiesFromFile(path:string) {
         const values = fs.readFileSync(path,'utf8')
             .toString()
@@ -62,6 +64,15 @@ class ProxyChecker {
         return this;
     }
 
+    /**
+     * 
+     * @param msTimeout Number of millisecond
+     */
+    public setRequestTimeout(msTimeout:number) {
+        this.timeout = msTimeout;
+        return this;
+    }
+
 
     private addProxyInList(proxy:string) {
         this.proxiesList.push(new Proxy(proxy, axios))
@@ -85,7 +96,7 @@ class ProxyChecker {
         if (!this.myIP) await this.getMyIP();
 
         result = await Promise.all(this.proxiesList.map(async (proxy) => {
-           await proxy.checkProxy(this.getRandomProxyJudge(),this.getRandomProxyInformationProvider(), this.myIP);
+           await proxy.checkProxy(this.getRandomProxyJudge(),this.getRandomProxyInformationProvider(), this.myIP, this.timeout);
 
            var r = new Result(proxy.anonymousLevel, proxy.speedLevel, proxy.status, proxy.version, proxy.proxy, proxy.proxyJudgeSelected, proxy.timeTaken, proxy.proxyInformationProviderSelected, proxy.country);
 
