@@ -48,7 +48,7 @@ describe('Unit test for classes/Proxy', () => {
         await instance.checkProxy(proxyJudge, proxyInformationProvider, myIp);
 
         expect(instance.timeTaken).not.toBe(0)
-        expect(instance.timeTaken >= 300).toBe(true)
+        expect(instance.timeTaken > 100).toBe(true)
         done()
     })
 

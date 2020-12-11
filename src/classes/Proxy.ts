@@ -119,13 +119,10 @@ class Proxy {
     }
 
     private handleCalculProxySpeed() {
-        if (this.timeTaken >= 3000) this.speedLevel = ProxySpeedLevel.Slow
-        if (this.timeTaken >= 1000) this.speedLevel = ProxySpeedLevel.Medium
         if (this.timeTaken < 1000) this.speedLevel = ProxySpeedLevel.Fast
+        if (this.timeTaken >= 1000) this.speedLevel = ProxySpeedLevel.Medium
+        if (this.timeTaken >= 3000) this.speedLevel = ProxySpeedLevel.Slow
     }
-
-
-
 
     private async getProxyJudgeInformation(): Promise<string> {
         const resultProxyJudge =

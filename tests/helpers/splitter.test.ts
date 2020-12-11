@@ -67,7 +67,6 @@ describe('Unit test for helpers/splitter', () => {
     })
 
     test('Should return goodFormat to false when call proxySplit with 192.45.50.320:80:test1:', () => {
-        console.log('e')
         const value ='192.45.50.320:80:test1:';
 
         const {goodFormat} = proxySplit(value);
