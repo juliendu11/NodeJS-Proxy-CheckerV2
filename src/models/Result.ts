@@ -5,10 +5,10 @@ import ProxyVersion from '../enum/ProxyVersion';
 
 class Result {
 
-    ProxyAnonymousLevel: ProxyAnonymousLevel
-    ProxySpeedLevel: ProxySpeedLevel
-    ProxyStatus: ProxyStatus
-    ProxyVersion: ProxyVersion
+    ProxyAnonymousLevel: ProxyAnonymousLevel = ProxyAnonymousLevel.Unknown;
+    ProxySpeedLevel: ProxySpeedLevel = ProxySpeedLevel.Unknown;
+    ProxyStatus: ProxyStatus = ProxyStatus.Unknown;
+    ProxyVersion: ProxyVersion = ProxyVersion.Unknown;
     Proxy:string
     ProxyJudgeSelected:string
     ProxyInformationProviderSelected:string

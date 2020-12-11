@@ -1,6 +1,5 @@
 enum ProxyVersion {
-    SOCKS5= "SOCKS5",
-    SOCKS4= "SOCKS4",
+    SOCKS= "SOCKS",
     HTTP= "HTTP",
     Unknown= "Unknown"
 }

@@ -5,8 +5,10 @@ import ProxyVersion from "../enum/ProxyVersion";
 import ProxyJudgeResponse from "../models/ProxyJudgeResponse";
 import { clock } from '../helpers/performance';
 import { AxiosRequestConfig, AxiosStatic } from "axios";
-import {proxySplit } from '../helpers/splitter'
-import { throws } from "assert";
+import { proxySplit } from '../helpers/splitter'
+import createSocksProxyAgent, { SocksProxyAgent } from 'socks-proxy-agent';
+
+import { generateAxiosHandler, checkRequestResponseIsGood } from '../helpers/request';
 
 class Proxy {
 
@@ -14,8 +16,8 @@ class Proxy {
     address: string
     port: string
 
-    username:string =""
-    password:string =""
+    username: string = ""
+    password: string = ""
 
     proxyJudgeSelected: string = ""
     proxyInformationProviderSelected: string = ""
@@ -28,54 +30,115 @@ class Proxy {
     country: string = ""
 
     axios: AxiosStatic | null = null;
-    timeout:number = 0;
+    timeout: number = 0;
+
+    myIP: string = ""
 
     constructor(proxy: string, axios: AxiosStatic) {
         this.proxy = proxy;
         this.axios = axios;
 
-        const val = proxySplit(proxy);
-        this.address = val[0];
-        this.port = val[1];
+        const { values, hasAuth } = proxySplit(proxy);
+        this.address = values[0];
+        this.port = values[1];
 
-        if(val.length > 2){
-            this.username = val[2];
-            this.password = val[3];
+        if (hasAuth) {
+            this.username = values[2];
+            this.password = values[3];
         }
     }
 
-    async checkProxy(proxyJudgeSelected: string, proxyInformationProviderSelected: string, myIP: string, timeout:number =0) {
+    async checkProxy(proxyJudgeSelected: string, proxyInformationProviderSelected: string, myIP: string, timeout: number = 0) {
         this.proxyJudgeSelected = proxyJudgeSelected;
         this.proxyInformationProviderSelected = proxyInformationProviderSelected;
         this.timeout = timeout;
+        this.myIP = myIP;
 
-        let data;
+        var start = clock(null);
 
-        try {
+        await this.checkWithHttpProxy();
+
+        var end = clock(start);
+
+        if (this.status === ProxyStatus.Dead) {
             var start = clock(null);
-            const result = await this.generateAxiosHandler(proxyJudgeSelected)
-            var end = clock(start);
-
-            if (typeof end === "number")
-                this.timeTaken = end;
-
-            if (result.status !== 200) {
-                this.status = ProxyStatus.Dead;
-                return;
-            }
-
-            this.status = ProxyStatus.Alive;
-            data = result.data;
-        } catch (error) {
-            this.status = ProxyStatus.Dead;
+            await this.checkWithSockProxy()
         }
+        var end = clock(start);
 
         if (this.status === ProxyStatus.Dead) return;
 
-        this.setAnonymousInformation(data, myIP);
-        await this.getProxyInformation();
+        if (typeof end === "number") {
+            this.timeTaken = end;
+            this.handleCalculProxySpeed()
+        }
+
+        if (proxyJudgeSelected) {
+            const proxyJudgeInformation = await this.getProxyJudgeInformation();
+            this.setAnonymousInformation(proxyJudgeInformation, this.myIP);
+        }
+
+        if (proxyInformationProviderSelected) {
+            const proxyInformation = await this.getProxyInformation();
+            if (!proxyInformation) return;
+
+            if (proxyInformation.country) {
+                this.country = proxyInformation?.country;
+            } else {
+                this.country = proxyInformation?.country_name;
+            }
+        }
     }
 
+    private async checkWithHttpProxy() {
+        try {
+            const resultWithHttp = await this.generateHttpAxiosHandler("http://check-host.net/ip");
+            if (!checkRequestResponseIsGood(resultWithHttp.status)) {
+                this.status = ProxyStatus.Dead;
+                return;
+            }
+            this.status = ProxyStatus.Alive;
+            this.version = ProxyVersion.HTTP;
+        } catch (error) {
+            this.status = ProxyStatus.Dead;
+        }
+    }
+
+    private async checkWithSockProxy() {
+        try {
+            const resultWithSocks = await this.generateSocksAxiosHandler("http://check-host.net/ip")
+            if (!checkRequestResponseIsGood(resultWithSocks.status)) {
+                this.status = ProxyStatus.Dead;
+                return;
+            }
+            this.status = ProxyStatus.Alive;
+            this.version = ProxyVersion.SOCKS
+        } catch (error) {
+            this.status = ProxyStatus.Dead;
+        }
+    }
+
+    private handleCalculProxySpeed() {
+        if (this.timeTaken >= 3000) this.speedLevel = ProxySpeedLevel.Slow
+        if (this.timeTaken >= 1000) this.speedLevel = ProxySpeedLevel.Medium
+        if (this.timeTaken < 1000) this.speedLevel = ProxySpeedLevel.Fast
+    }
+
+
+
+
+    private async getProxyJudgeInformation(): Promise<string> {
+        const resultProxyJudge =
+            this.version === ProxyVersion.HTTP ?
+                await this.generateHttpAxiosHandler(this.proxyJudgeSelected)
+                : await this.generateSocksAxiosHandler(this.proxyJudgeSelected);
+
+        if (resultProxyJudge.status !== 200) {
+            this.status = ProxyStatus.Dead;
+            return "";
+        }
+        return resultProxyJudge.data;
+    }
 
     private setAnonymousInformation(data: any, myIP: string) {
         var obj = this.parseProxyJudgeInformation(data);
@@ -92,9 +155,13 @@ class Proxy {
         }
     }
 
-    private async getProxyInformation() {
+    private async getProxyInformation(): Promise<any | null> {
         try {
-            const { data, status } = await this.generateAxiosHandler(this.proxyInformationProviderSelected)
+            const { data, status } =
+                this.version === ProxyVersion.HTTP ?
+                    await this.generateHttpAxiosHandler(this.proxyJudgeSelected)
+                    : await this.generateSocksAxiosHandler(this.proxyJudgeSelected);
+
             if (status == 200) {
                 let b = null
                 try {
@@ -102,23 +169,19 @@ class Proxy {
                 } catch (error) {
                     b = data
                 }
-
-                if (b.country) {
-                    this.country = b.country;
-                } else {
-                    this.country = b.country_name;
-                }
+                return b;
             }
         } catch (error) {
-
         }
+
+        return null;
     }
 
     /**
- * Parse data of proxy judege to object with key:value
- * @param {string} content proxy judge response
- * @returns {object}
- */
+     * Parse data of proxy judege to object with key:value
+     * @param {string} content proxy judge response
+     * @returns {object}
+     */
     private parseProxyJudgeInformation(content: string): ProxyJudgeResponse {
         var values: ProxyJudgeResponse = {};
 
@@ -132,32 +195,41 @@ class Proxy {
         return values;
     }
 
-    private async generateAxiosHandler(url: string) {
+    private async generateHttpAxiosHandler(url: string) {
         if (!this.axios) throw new Error("No axios instance added")
 
-        let option: AxiosRequestConfig = {
-            timeout: this.timeout,
+        const option: AxiosRequestConfig = {
             proxy: {
                 host: this.address,
                 port: parseInt(this.port),
-            },
-        }
-
-        if (this.username && this.password) {
-            option = {
-                timeout: this.timeout,
-                proxy: {
-                    host: this.address,
-                    port: parseInt(this.port),
-                    auth: {
-                        username: this.username,
-                        password: this.password
-                    }
-                },
             }
         }
-        
-        return await this.axios.get(url, option)
+
+        if (this.username && this.password && option.proxy) {
+            option.proxy.auth = {
+                username: this.username,
+                password: this.password
+            }
+        }
+
+        return generateAxiosHandler(this.axios, this.timeout, null, option).get(url)
+    }
+
+    private async generateSocksAxiosHandler(url: string) {
+        if (!this.axios) throw new Error("No axios instance added")
+
+        const option: createSocksProxyAgent.SocksProxyAgentOptions = {
+            host: `socks://${this.address}:${this.port}`,
+            timeout: this.timeout,
+        };
+
+        if (this.username && this.password) {
+            option.userId = this.username;
+            option.password = this.password;
+        }
+        const agent = new SocksProxyAgent(option);
+
+        return generateAxiosHandler(this.axios, this.timeout, agent, null).get(url)
     }
 }
 

@@ -3,7 +3,10 @@ import ProxySpeedLevel from '../src/enum/ProxySpeedLevel';
 import ProxyStatus from '../src/enum/ProxyStatus';
 import ProxyChecker from '../src/index';
 import Result from '../src/models/Result';
-
+import ResultCheckLinks from '../src/models/ResultCheckLinks';
+import LinkType from '../src/enum/LinkType';
+import {generateAxiosHandler} from '../src/helpers/request'
+import axios from 'axios'
 const fakeProxies = [
     '144.91.98.115:5836',
     '144.91.98.116:5836',
@@ -11,6 +14,10 @@ const fakeProxies = [
 ]
 
 describe('Unit test for index.ts', () => {
+    jest.mock('axios')
+
+    afterEach(jest.resetAllMocks)
+    
     test('Should correct load proxies with file when call addProxiesFromFile', () => {
         const fakeProxiesFile = __dirname + '/ressources/proxies.txt'
         const instance = new ProxyChecker();
@@ -82,25 +89,6 @@ describe('Unit test for index.ts', () => {
         expect(instance.proxyInformationProvider.length).toBe(lenghtExpected);
     })
 
-    test('Should return exception when call check because no proxy judge loaded but the rest is OK', async done => {
-        const instance = new ProxyChecker();
-        instance.addProxiesFromArray(fakeProxies)
-        instance.addDefaultProxyInformationProvider();
-        //instance.addDefaultProxyJudge();
-
-        await expect(instance.check(null)).rejects.toThrow("No proxy judge added")
-        done()
-    })
-
-    test('Should return exception when call check because no proxy information provider loaded but the rest is OK', async done => {
-        const instance = new ProxyChecker();
-        instance.addProxiesFromArray(fakeProxies)
-        // instance.addDefaultProxyInformationProvider();
-        instance.addDefaultProxyJudge();
-
-        await expect(instance.check(null)).rejects.toThrow("No proxy information provider added")
-        done()
-    })
 
     test('Should return exception when call check because no proxy loaded but the rest is OK', async done => {
         const instance = new ProxyChecker();
@@ -115,8 +103,6 @@ describe('Unit test for index.ts', () => {
     test('Should return correct information with respect to proxy information when calling check with 3 proxy return 3 result', async done => {
         const instance = new ProxyChecker();
         instance.addProxiesFromArray(fakeProxies)
-        instance.addDefaultProxyInformationProvider();
-        instance.addDefaultProxyJudge();
 
         const mockCheck = jest.fn();
         instance.proxiesList.forEach(v => v.checkProxy = mockCheck)
@@ -141,35 +127,35 @@ describe('Unit test for index.ts', () => {
         expect(result.length).toBe(fakeProxies.length)
 
 
-        expect(result[0].Proxy).toBe( instance.proxiesList[0].proxy)
-        expect(result[0].Country).toBe( instance.proxiesList[0].country)
-        expect(result[0].ProxyAnonymousLevel).toBe( instance.proxiesList[0].anonymousLevel)
-        expect(result[0].ProxyInformationProviderSelected).toBe( instance.proxiesList[0].proxyInformationProviderSelected)
-        expect(result[0].ProxyJudgeSelected).toBe( instance.proxiesList[0].proxyJudgeSelected)
-        expect(result[0].ProxySpeedLevel).toBe( instance.proxiesList[0].speedLevel)
-        expect(result[0].ProxyStatus).toBe( instance.proxiesList[0].status)
-        expect(result[0].ProxyVersion).toBe( instance.proxiesList[0].version)
-        expect(result[0].TimeTaken).toBe( instance.proxiesList[0].timeTaken)
+        expect(result[0].Proxy).toBe(instance.proxiesList[0].proxy)
+        expect(result[0].Country).toBe(instance.proxiesList[0].country)
+        expect(result[0].ProxyAnonymousLevel).toBe(instance.proxiesList[0].anonymousLevel)
+        expect(result[0].ProxyInformationProviderSelected).toBe(instance.proxiesList[0].proxyInformationProviderSelected)
+        expect(result[0].ProxyJudgeSelected).toBe(instance.proxiesList[0].proxyJudgeSelected)
+        expect(result[0].ProxySpeedLevel).toBe(instance.proxiesList[0].speedLevel)
+        expect(result[0].ProxyStatus).toBe(instance.proxiesList[0].status)
+        expect(result[0].ProxyVersion).toBe(instance.proxiesList[0].version)
+        expect(result[0].TimeTaken).toBe(instance.proxiesList[0].timeTaken)
 
-        expect(result[1].Proxy).toBe( instance.proxiesList[1].proxy)
-        expect(result[1].Country).toBe( instance.proxiesList[1].country)
-        expect(result[1].ProxyAnonymousLevel).toBe( instance.proxiesList[1].anonymousLevel)
-        expect(result[1].ProxyInformationProviderSelected).toBe( instance.proxiesList[1].proxyInformationProviderSelected)
-        expect(result[1].ProxyJudgeSelected).toBe( instance.proxiesList[1].proxyJudgeSelected)
-        expect(result[1].ProxySpeedLevel).toBe( instance.proxiesList[1].speedLevel)
-        expect(result[1].ProxyStatus).toBe( instance.proxiesList[1].status)
-        expect(result[1].ProxyVersion).toBe( instance.proxiesList[1].version)
-        expect(result[1].TimeTaken).toBe( instance.proxiesList[1].timeTaken)
+        expect(result[1].Proxy).toBe(instance.proxiesList[1].proxy)
+        expect(result[1].Country).toBe(instance.proxiesList[1].country)
+        expect(result[1].ProxyAnonymousLevel).toBe(instance.proxiesList[1].anonymousLevel)
+        expect(result[1].ProxyInformationProviderSelected).toBe(instance.proxiesList[1].proxyInformationProviderSelected)
+        expect(result[1].ProxyJudgeSelected).toBe(instance.proxiesList[1].proxyJudgeSelected)
+        expect(result[1].ProxySpeedLevel).toBe(instance.proxiesList[1].speedLevel)
+        expect(result[1].ProxyStatus).toBe(instance.proxiesList[1].status)
+        expect(result[1].ProxyVersion).toBe(instance.proxiesList[1].version)
+        expect(result[1].TimeTaken).toBe(instance.proxiesList[1].timeTaken)
 
-        expect(result[2].Proxy).toBe( instance.proxiesList[2].proxy)
-        expect(result[2].Country).toBe( instance.proxiesList[2].country)
-        expect(result[2].ProxyAnonymousLevel).toBe( instance.proxiesList[2].anonymousLevel)
-        expect(result[2].ProxyInformationProviderSelected).toBe( instance.proxiesList[2].proxyInformationProviderSelected)
-        expect(result[2].ProxyJudgeSelected).toBe( instance.proxiesList[2].proxyJudgeSelected)
-        expect(result[2].ProxySpeedLevel).toBe( instance.proxiesList[2].speedLevel)
-        expect(result[2].ProxyStatus).toBe( instance.proxiesList[2].status)
-        expect(result[2].ProxyVersion).toBe( instance.proxiesList[2].version)
-        expect(result[2].TimeTaken).toBe( instance.proxiesList[2].timeTaken)
+        expect(result[2].Proxy).toBe(instance.proxiesList[2].proxy)
+        expect(result[2].Country).toBe(instance.proxiesList[2].country)
+        expect(result[2].ProxyAnonymousLevel).toBe(instance.proxiesList[2].anonymousLevel)
+        expect(result[2].ProxyInformationProviderSelected).toBe(instance.proxiesList[2].proxyInformationProviderSelected)
+        expect(result[2].ProxyJudgeSelected).toBe(instance.proxiesList[2].proxyJudgeSelected)
+        expect(result[2].ProxySpeedLevel).toBe(instance.proxiesList[2].speedLevel)
+        expect(result[2].ProxyStatus).toBe(instance.proxiesList[2].status)
+        expect(result[2].ProxyVersion).toBe(instance.proxiesList[2].version)
+        expect(result[2].TimeTaken).toBe(instance.proxiesList[2].timeTaken)
 
 
         done();
@@ -178,11 +164,9 @@ describe('Unit test for index.ts', () => {
     test('Should use callback 3 times and return Result type when call check because callback is available and have 3 proxy', async done => {
         const instance = new ProxyChecker();
         instance.addProxiesFromArray(fakeProxies)
-        instance.addDefaultProxyInformationProvider();
-        instance.addDefaultProxyJudge();
 
         let called = 0
-        let returnedCallback:any = []
+        let returnedCallback: any = []
 
         const mockCheck = jest.fn();
         instance.proxiesList.forEach(v => v.checkProxy = mockCheck)
@@ -205,5 +189,78 @@ describe('Unit test for index.ts', () => {
         instance.setRequestTimeout(3000);
 
         expect(instance.timeout).toBe(3000);
+    })
+
+    test('Should return corresponding result when call checkProxyJudgeLinks', async done => {
+        axios.create = jest.fn().mockReturnValue({
+            get: jest.fn()
+                .mockResolvedValueOnce({ 
+                    status: 200,
+                    data: 'test'
+                })
+                .mockResolvedValueOnce({ 
+                    status: 500,
+                    data: 'test'
+                })
+                .mockResolvedValueOnce({
+                    status: 200,
+                    data: ''
+                })
+        })
+        const instance = new ProxyChecker();
+        instance.addProxyJudge(['http://test1.com', 'http://test2.com', 'http://test3.com'])
+
+
+        const result = await instance.checkProxyJudgeLinks(null);
+
+        expect(result).toHaveLength(3);
+
+        expect(result[0]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyJudge, true, "", 'http://test1.com')
+        )
+        expect(result[1]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyJudge, false, `Response code is 500`, 'http://test2.com')
+        )
+        expect(result[2]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyJudge, false, "No data received in response", 'http://test3.com')
+        )
+        done();
+    })
+
+    test('Should return corresponding result when call checkProxyInformationProviderLinks', async done => {
+        axios.create = jest.fn().mockReturnValue({
+            get: jest.fn()
+                .mockResolvedValueOnce({ 
+                    status: 200,
+                    data: 'test'
+                })
+                .mockResolvedValueOnce({ 
+                    status: 500,
+                    data: 'test'
+                })
+                .mockResolvedValueOnce({
+                    status: 200,
+                    data: ''
+                })
+        })
+
+        const instance = new ProxyChecker();
+        instance.addProxyInformationProvider(['http://test1.com', 'http://test2.com', 'http://test3.com'])
+
+
+        const result = await instance.checkProxyInformationProviderLinks(null);
+
+        expect(result).toHaveLength(3);
+
+        expect(result[0]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyInformationProvider, true, "", 'http://test1.com')
+        )
+        expect(result[1]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyInformationProvider, false, `Response code is 500`, 'http://test2.com')
+        )
+        expect(result[2]).toEqual(
+            new ResultCheckLinks(LinkType.ProxyInformationProvider, false, "No data received in response", 'http://test3.com')
+        )
+        done();
     })
 })

@@ -4,8 +4,8 @@ It's simple Proxy Checker, get proxy status, anonymous level, type, time, countr
 
 - [x] Proxy anonymous level
 - [x] Proxy country
-- [ ] Type
-- [ ] Proxy Time
+- [x] Proxy type (HTTP or SOCKS)
+- [x] Proxy time
 
 ## Install
 
@@ -13,7 +13,7 @@ It's simple Proxy Checker, get proxy status, anonymous level, type, time, countr
 npm i nodejs-proxy-checkerv2
 ```
 
-# How to use ?
+## How to use ?
 
 ```javascript
 const ProxyChecker = require("nodejs-proxy-checkerv2").default;
@@ -27,7 +27,7 @@ const result = await instance.check(null);
 
 Proxy format: <strong>address:port</strong> or <strong>address:port:username:password</strong>
 
-### Load proxies with file
+#### Load proxies with file
 
 
 
@@ -40,7 +40,7 @@ const instance =new ProxyChecker()
 const result = await instance.check(null);
 ```
 
-### Load proxys with string array
+#### Load proxys with string array
 
 
 
@@ -59,7 +59,7 @@ const instance =new ProxyChecker()
 const result = await instance.check(null);
 ```
 
-### Load only one proxy
+#### Load only one proxy
 
 ```javascript
 const instance =new ProxyChecker()
@@ -70,7 +70,7 @@ const instance =new ProxyChecker()
 const result = await instance.check(null);
 ```
 
-### You can combine the 3
+#### You can combine the 3
 
 ```javascript
 const instance =new ProxyChecker()
@@ -85,7 +85,7 @@ const result = await instance.check(null);
 
 ## Options
 
-You can put a callback in order to have the result of each live proxy test so as not to wait for everything
+#### You can put a callback in order to have the result of each live proxy test so as not to wait for all
 
 ```javascript
 const instance =new ProxyChecker()
@@ -96,7 +96,7 @@ const result = await instance.check((result) => {
 });
 ```
 
-You don't have to put addDefaultProxyJudge and addDefaultProxyInformationProvider if you have yours you can add like this
+#### You don't have to put addDefaultProxyJudge and addDefaultProxyInformationProvider if you have yours you can add like this
 
 ```javascript
 const myInformationProviderLinks = ['https://test.com/', 'https://test2.com/']
@@ -110,7 +110,7 @@ const instance =new ProxyChecker()
     .addProxyJudge(myProxyJudgesLinks);
 ```
 
-Or combine default and yours
+#### Or combine default and yours
 
 ```javascript
 const myInformationProviderLinks = ['https://test.com/', 'https://test2.com/']
@@ -124,6 +124,25 @@ const instance =new ProxyChecker()
     .addDefaultProxyInformationProvider(); // -> optional if you put yours otherwise you have to put it
 ```
 
+#### You can check the judges proxy link and proxy informations provider link with:
+
+
+:warning: *Links are automatically checked and filtered when called "check()" those that don't work are ignored*
+```javascript
+const instance =new ProxyChecker()
+
+const result = await instance.checkProxyJudgeLinks(null) //or instance.checkProxyJudgeLinks((val) => console.log(val)) for direct
+const result2 = await instance.checkProxyInformationProviderLinks(null) // or instance.checkProxyInformationProviderLinks((val) => console.log(val)) for direct
+```
+
+## Results
+
+- [check()](./src/models/Result.ts)
+- [checkProxyInformationProviderLinks()](./src/models/ResultCheckLinks.ts)
+- [checkProxyJudgeLinks()](./src/models/ResultCheckLinks.ts)
+
+
 ## Dependencies
 
 - [axios](https://www.npmjs.com/package/axios)
+- [socks-proxy-agent](https://www.npmjs.com/package/socks-proxy-agent)
